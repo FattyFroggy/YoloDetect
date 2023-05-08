@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <unistd.h>
 #include <iostream>
 #include <QDebug>
 #include <QLabel>
@@ -24,6 +23,10 @@
 #include "recordthread.h"
 #include<QProgressBar>
 #include<playermainwindow.h>
+#include<QtMaterialAppBar.h>
+#include<QInputDialog>
+#include<QDateTimeEdit>
+#include<QMessageBox>
 using namespace std;
 
 
@@ -62,18 +65,20 @@ private slots:
     void on_EndRecBtn_clicked();
     
     void onRec();
-    void checkImage(cv::Mat &img,cv::Mat &img_2);
     void on_OpenPicBtn_clicked();
 
-//    void updateFrame(const QImage& frame, int frameNo);
-//    void updateDuration(int duration);
-//    void seek(int frameNo);
+
     void on_OpenVideoWindow_clicked();
 
+    void on_GetTracker(const cv::Mat &mat);
+
+    void IntervalRec();
+    void on_StopTimeRec_clicked();
+
+    void on_SetTimeRec_clicked();
+
 private:
-//    QProgressBar *progressBar;
-//    QVideoWidget *videoWidget;// 视频显示组件
-//    QMediaPlayer * player;//媒体播放器类
+
     RecordThread *m_recordThread;
     VideoThread *m_videoThread;
 //    PlayVideo *m_playVideoThread;
@@ -82,12 +87,14 @@ private:
     QImage imag;
     cv::VideoCapture cam;
     QTimer *timer;//定时器用于定时取帧，上面说的隔一段时间就去取就是用这个实现
+    QTimer *EditTimer;
 //    QTimer *progressTimer;
     void init();
 
     bool isRec;
 //    double rate;
     cv::VideoWriter writer;
+
 
 };
 #endif // MAINWINDOW_H

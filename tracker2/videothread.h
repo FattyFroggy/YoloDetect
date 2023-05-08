@@ -12,6 +12,7 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
+#include "yolo.h"
 
 class VideoThread : public QThread
 {
@@ -20,7 +21,7 @@ public:
     VideoThread(QObject *parent = nullptr);
 
     void run() override;
-
+    void on_GetTracker(const cv::Mat &mat);
 
 
 signals:
@@ -28,6 +29,8 @@ signals:
     void CameraLabel(const cv::Mat &frame);
 
     void captureReady(cv::VideoCapture *capture);
+
+    void SendTracker(const cv::Mat &mat);
 private:
 
     QMutex m_mutex;

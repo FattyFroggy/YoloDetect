@@ -17,7 +17,9 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 #include <QtCore>
-
+#include <fstream>
+#include <sstream>
+#include <iostream>
 class RecordThread:public QThread
 {
       Q_OBJECT
@@ -32,7 +34,7 @@ public slots:
    void onRecord(const cv::Mat &mat);
 private:
    cv::VideoWriter writer;
-   QQueue<QImage>  m_queue;
+   QQueue<cv::Mat>  m_queue;
    cv::Mat frame;
    QImage image;
    QWaitCondition m_condition;

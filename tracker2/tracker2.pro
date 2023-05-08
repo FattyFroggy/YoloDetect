@@ -21,25 +21,40 @@ SOURCES += \
     playermainwindow.cpp \
     playerslider.cpp \
     recordthread.cpp \
-    videothread.cpp
+    videothread.cpp \
+    yolo.cpp
 
 HEADERS += \
     mainwindow.h \
     playermainwindow.h \
     playerslider.h \
     recordthread.h \
-    videothread.h
+    videothread.h \
+    yolo.h
 
 FORMS += \
     mainwindow.ui \
     playermainwindow.ui
 
 
-INCLUDEPATH += C:\OpenCV\opencv\op_build\install\include
+#INCLUDEPATH += C:\OpenCV\opencv\op_build\install\include
 
-LIBS += C:\OpenCV\opencv\op_build\lib\libopencv_*.a
+#LIBS += C:\OpenCV\opencv\op_build\lib\libopencv_*.a
+INCLUDEPATH += C:\OpenCV\build2\install\include
+DEPENDPATH += C:\OpenCV\build2\install\include
+LIBS +=
+Debug:{
+    LIBS += C:\OpenCV\build\lib\Debug\opencv_world454d.lib
+}
+Release:{
+    LIBS +=C:\OpenCV\build\install\x64\vc16\lib\opencv_world454.lib
+}
+LIBS +=$$PWD/libs/libcomponents.a
+INCLUDEPATH += $$PWD/libs/Include
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 QT += multimedia multimediawidgets
+
+

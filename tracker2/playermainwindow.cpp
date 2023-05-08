@@ -6,7 +6,7 @@ PlayerMainWindow::PlayerMainWindow(QWidget *parent) :
     ui(new Ui::PlayerMainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("播放器");
+    setWindowTitle("VIDEO PLAYER");
     setWindowIcon(QIcon(":/icon/icon.webp"));// 图标
     setFixedSize(800,600);//设置固定大小
 
@@ -59,7 +59,7 @@ PlayerMainWindow::~PlayerMainWindow()
 //载入
 void PlayerMainWindow::OnSetMediaFile()
 {
-    QFileDialog dialog(this);//文件选择窗口
+    QFileDialog dialog(this,"D:/111","D:/111/Video",tr("(*.avi)"));//文件选择窗口
     dialog.setFileMode(QFileDialog::AnyFile);//设置文件模式(文件/文件夹)：任意文件，无论是否存在
     QStringList fileNames;
     if (dialog.exec())

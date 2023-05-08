@@ -9,12 +9,15 @@ RecordThread::RecordThread(QObject *parent)
 
 void RecordThread::run()
 {
-    qDebug("nihao");
+    qDebug("startRec");
     QDateTime time = QDateTime::currentDateTime();
     QString timeStr = time.toString("yyyyMMdd");
     QString strDate = time.toString("yyyy-MM-dd-hhmmss");
+//    QString timeStr1 = time.toString("mm-ss-zzz");
 
-    QString fileStr = "D:/111/"+strDate + ".avi";
+//    qDebug("readString = %s",qPrintable(timeStr1));
+
+    QString fileStr = "D:/111/Video/"+strDate + ".avi";
     int fps=25;
     writer.open(fileStr.toStdString(),
                 cv::VideoWriter::fourcc('X','2','6','4'),
@@ -24,16 +27,24 @@ void RecordThread::run()
 
     while (!isInterruptionRequested()) {
 
+
          QMutexLocker locker(&m_mutex);
          while (m_queue.isEmpty()) {
-             m_condition.wait(&m_mutex); // 进入等待状态
+             if (!m_condition.wait(&m_mutex, 100)) { // 设置超时时间为100毫秒
+                 qDebug("outtime");
+                 qDebug("卡死结束录制");
+                 writer.release();
+                 return;
+             }
          }
 
-         image=m_queue.dequeue();
-         frame=Qimag2Mat(image);
+//         image=m_queue.dequeue();
+//         frame=Qimag2Mat(image);
+
+         frame=m_queue.dequeue();
          msleep(40); // 等待队列中有可用帧
          writer.write(frame);
-
+        QCoreApplication::processEvents();
 //        if (!m_queue.isEmpty()) {
 //             //qDebug()<<m_queue.isEmpty();
 //            //qDebug("出队开始");
@@ -46,6 +57,10 @@ void RecordThread::run()
 //            continue;
 //        }
     }
+//    QDateTime time2 = QDateTime::currentDateTime();
+//    QString timeStr2 = time2.toString("mm-ss-zzz");
+
+//    qDebug("readString2 = %s",qPrintable(timeStr2));
     qDebug("结束录制");
     writer.release();
 }
@@ -53,11 +68,12 @@ void RecordThread::onRecord(const cv::Mat &mat)
 {
     //qDebug("收到1帧");
     QMutexLocker locker(&m_mutex);
-    QImage ima=Mat2Qimag(mat);
-    m_queue.enqueue(ima);
+//    QImage ima=Mat2Qimag(mat);
+    m_queue.enqueue(mat);
     m_condition.wakeAll();
 }
 cv::Mat RecordThread::Qimag2Mat(QImage image){
+
 
     cv::Mat mat;
     switch (image.format())

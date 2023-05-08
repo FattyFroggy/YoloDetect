@@ -57,7 +57,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="maxTime">
+      <widget class="QLabel" name="minTime">
        <property name="text">
         <string>TextLabel</string>
        </property>
@@ -65,13 +65,21 @@
      </item>
      <item>
       <widget class="PlayerSlider" name="slider">
+       <property name="styleSheet">
+        <string notr="true">min-height:10px;
+background:#DEF0FE;
+border-radius:5px;
+text-align:center;
+border:1px solid #DEF0FE;
+</string>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="minTime">
+      <widget class="QLabel" name="maxTime">
        <property name="text">
         <string>TextLabel</string>
        </property>
