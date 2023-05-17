@@ -1,5 +1,6 @@
 QT       += core gui
 
+QT +=sql
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
@@ -22,6 +23,7 @@ SOURCES += \
     playerslider.cpp \
     recordthread.cpp \
     videothread.cpp \
+    widget.cpp \
     yolo.cpp
 
 HEADERS += \
@@ -30,11 +32,13 @@ HEADERS += \
     playerslider.h \
     recordthread.h \
     videothread.h \
+    widget.h \
     yolo.h
 
 FORMS += \
     mainwindow.ui \
-    playermainwindow.ui
+    playermainwindow.ui \
+    widget.ui
 
 
 #INCLUDEPATH += C:\OpenCV\opencv\op_build\install\include
@@ -49,12 +53,24 @@ Debug:{
 Release:{
     LIBS +=C:\OpenCV\build\install\x64\vc16\lib\opencv_world454.lib
 }
+
+
 LIBS +=$$PWD/libs/libcomponents.a
 INCLUDEPATH += $$PWD/libs/Include
+
+msvc {
+    QMAKE_CFLAGS += /utf-8
+    QMAKE_CXXFLAGS += /utf-8
+}
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 QT += multimedia multimediawidgets
+
+RESOURCES += \
+    Resources.qrc
+
+DISTFILES +=
 
 

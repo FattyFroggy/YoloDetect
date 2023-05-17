@@ -1,6 +1,8 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#if defined(_MSC_VER) && (_MSC_VER >= 1600)
+# pragma execution_character_set("utf-8")
+#endif
 #include <QMainWindow>
 #include <iostream>
 #include <QDebug>
@@ -27,6 +29,9 @@
 #include<QInputDialog>
 #include<QDateTimeEdit>
 #include<QMessageBox>
+#include <QTableWidget>
+#include <QStringList>
+#include "widget.h"
 using namespace std;
 
 
@@ -76,7 +81,8 @@ private slots:
     void on_StopTimeRec_clicked();
 
     void on_SetTimeRec_clicked();
-
+    void OnitemsEmitted(const QList<QTableWidgetItem*>& items);
+    void OnGetFps(double &fps);
 private:
 
     RecordThread *m_recordThread;

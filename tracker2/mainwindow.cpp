@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include"qtmaterialautocomplete.h"
 
@@ -37,6 +37,38 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
+
+    //加载样式表
+    QString qss;
+    QFile file(":/css/blue.css");
+
+    if (file.open(QFile::ReadOnly))
+    {
+        //用readAll读取默认支持的是ANSI格式,如果不小心用creator打开编辑过了很可能打不开
+        qss = QLatin1String(file.readAll());
+
+        QString paletteColor = qss.mid(20, 7);
+        qApp->setPalette(QPalette(QColor(paletteColor)));
+        qApp->setStyleSheet(qss);
+        file.close();
+    }
+
+
+    /*皮肤设置*/
+    QFile file2(":/res/qss/style-4.qss");/*QSS文件所在的路径*/
+    file2.open(QFile::ReadOnly);
+    QTextStream filetext(&file2);
+    QString stylesheet = filetext.readAll();
+    this->setStyleSheet(stylesheet);
+    file2.close();
+
+    QStringList horizontalHeaders;
+    horizontalHeaders << "class" << "confirm" << "x1"<< "x2"<< "y1"<< "y2";
+    ui->tableWidget->setColumnCount(horizontalHeaders.count());
+    ui->tableWidget->setRowCount(10);
+
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableWidget->setHorizontalHeaderLabels(horizontalHeaders);
 
 
 
@@ -77,7 +109,8 @@ void MainWindow::init()
     connect(m_videoThread, &VideoThread::error, this, &MainWindow::handleError);
     connect(m_videoThread, &VideoThread::CameraLabel, this, &MainWindow::ShowCameraLabel,Qt::DirectConnection);
     connect(m_videoThread, &VideoThread::SendTracker, this, &MainWindow::on_GetTracker,Qt::DirectConnection);
-
+    connect(m_videoThread, &VideoThread::itemsEmitted, this, &MainWindow::OnitemsEmitted,Qt::DirectConnection);
+    connect(m_videoThread, &VideoThread::SendFps, this, &MainWindow::OnGetFps,Qt::DirectConnection);
     timer=new QTimer(this);
     //progressTimer=new QTimer(this);
 
@@ -91,8 +124,11 @@ void MainWindow::init()
     ui->SavePicBtn->setEnabled(false);
     ui->StartRecBtn->setEnabled(false);
     ui->EndRecBtn->setEnabled(false);
+    ui->StopTimeRec->setEnabled(false);
 
 
+    ui->label_24->setText("未定时");
+    ui->label_20->setText("未录制");
     ui->dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
     ui->dateTimeEdit->setMinimumDateTime(QDateTime::currentDateTime());
 
@@ -101,18 +137,18 @@ void MainWindow::on_GetTracker(const cv::Mat &target){
     imag = Mat2QImage(target);
 
     if(imag.isNull()){
-        ui->label_3->clear();
+        //ui->label_3->clear();
         ui->label_2->clear();
     }else{
         ui->label_2->setPixmap(QPixmap::fromImage(imag.scaled(ui->label->size(),Qt::KeepAspectRatio)));
-        ui->label_3->setText("出现可疑人物！！！！");
+        //ui->label_3->setText("出现可疑人物！！！！");
     }
 
 
 };
 void MainWindow::handleError(const QString& error)
 {
-    ui->statusbar->showMessage(error);
+    //ui->statusbar->showMessage(error);
 }
 //void MainWindow::updateFrame(const QImage& frame, int frameNo)
 //{
@@ -133,7 +169,33 @@ void MainWindow::onRec()
 {
     emit sendRecord(recFrame);
 }
+void MainWindow::OnitemsEmitted(const QList<QTableWidgetItem*>& items)
+{
+    int row = 0;
+    int col = 0;
 
+    ui->tableWidget->clear();
+
+    QStringList horizontalHeaders;
+    horizontalHeaders << "class" << "confirm" << "x1"<< "x2"<< "y1"<< "y2";
+    ui->tableWidget->setHorizontalHeaderLabels(horizontalHeaders);
+    for (const QTableWidgetItem* item : items)
+    {
+        QTableWidgetItem *newItem = new QTableWidgetItem(QString::fromStdString(item->text().toStdString()));
+        QString text=newItem->text();
+        ui->tableWidget->setItem(row, col, newItem);
+        col++;
+
+        // 如果达到行的最大列数，增加行数并重置列数为0
+        if (col >= ui->tableWidget->columnCount()) {
+            row++;
+            col = 0;
+    }
+}
+}
+void MainWindow::OnGetFps(double &fps){
+    ui->label_22->setText(QString::number(fps));
+}
 void MainWindow::ShowCameraLabel(const Mat &frame)
 {
     recFrame=frame;
@@ -144,7 +206,7 @@ void MainWindow::ShowCameraLabel(const Mat &frame)
 
     QDateTime time = QDateTime::currentDateTime();
     QString Date = time.toString("yyyy-MM-dd-hh--mm--ss");
-    ui->label_state->setText(Date);
+    ui->label_4->setText(Date);
 }
 QImage MainWindow::Mat2QImage(const Mat &mat)//mat转QImage
 {
@@ -182,7 +244,7 @@ void MainWindow::on_OpenCameraBtn_clicked()
     ui->StartRecBtn->setEnabled(true);
     ui->TakePicBtn->setEnabled(true);
     ui->SavePicBtn->setEnabled(true);
-     m_videoThread->start();
+    m_videoThread->start();
 
 }
 
@@ -190,7 +252,7 @@ void MainWindow::on_TakePicBtn_clicked()
 {
 
     imag = ui->label->pixmap()->toImage();
-    ui->label_2->setPixmap(QPixmap::fromImage(imag.scaled(ui->label->size(),Qt::KeepAspectRatio)));
+    ui->label_3->setPixmap(QPixmap::fromImage(imag.scaled(ui->label_3->size(),Qt::KeepAspectRatio)));
 
 }
 
@@ -244,10 +306,12 @@ void MainWindow::on_SavePicBtn_clicked()
     qDebug("readString = %s",qPrintable(readString));
 
     if(imag.save(readString)){
-           ui->label_state->setText("图片保存成功");
+          // ui->label_state->setText("图片保存成功");
+
+           QMessageBox::information(NULL, "savePic", "保存截图成功", QMessageBox::Yes);
      }else {
-            ui->label_state->setText("图片保存失败");
-     }
+           QMessageBox::warning(NULL,"Error","保存截图失败");
+    }
 }
 
 void MainWindow::on_StartRecBtn_clicked()
@@ -255,7 +319,8 @@ void MainWindow::on_StartRecBtn_clicked()
     ui->StartRecBtn->setEnabled(false);
     ui->EndRecBtn->setEnabled(true);
     timer->start(40);
-     m_recordThread->start();
+    m_recordThread->start();
+    ui->label_20->setText("录制中......");
 
 }
 
@@ -269,6 +334,7 @@ void MainWindow::on_EndRecBtn_clicked()
     timer->stop();
     m_recordThread->requestInterruption();
     m_recordThread->wait();
+    ui->label_20->setText("未录制");
 
 }
 
@@ -291,7 +357,6 @@ void MainWindow::on_OpenPicBtn_clicked()
 void MainWindow::on_OpenVideoWindow_clicked()
 {
     PlayerMainWindow *p=new PlayerMainWindow();
-
     this->hide();
     p->show();
 
@@ -345,16 +410,22 @@ void MainWindow::IntervalRec()
 
 void MainWindow::on_SetTimeRec_clicked()
 {
-    ui->OpenCameraBtn->setEnabled(false);
-    ui->CloseCameraBtn->setEnabled(false);
-    ui->TakePicBtn->setEnabled(false);
-    ui->SavePicBtn->setEnabled(false);
+//    ui->OpenCameraBtn->setEnabled(false);
+//    ui->CloseCameraBtn->setEnabled(false);
+//    ui->TakePicBtn->setEnabled(false);
+//    ui->SavePicBtn->setEnabled(false);
+//    ui->StopTimeRec->setEnabled(true);
 
-
-    int result = QMessageBox::question(this, tr("Set Time"), tr("Please set the target time."), QMessageBox::Ok | QMessageBox::Cancel);
+    int result = QMessageBox::question(this, tr("Set Time"), tr("请在右方表中设置定时开启时间"), QMessageBox::Ok | QMessageBox::Cancel);
     if (result == QMessageBox::Ok) {
-        //ui->dateTimeEdit->show();
+        ui->OpenCameraBtn->setEnabled(false);
+        ui->CloseCameraBtn->setEnabled(false);
+        ui->TakePicBtn->setEnabled(false);
+        ui->SavePicBtn->setEnabled(false);
+        ui->StopTimeRec->setEnabled(true);
+        ui->SetTimeRec->setEnabled(false);
     } else {
+
         return;
     }
 
@@ -364,7 +435,9 @@ void MainWindow::on_SetTimeRec_clicked()
       QDateTime target = ui->dateTimeEdit->dateTime();
       int msecToTarget = now.msecsTo(target);
 
-
+      if(msecToTarget<0){
+         QMessageBox::warning(NULL,"Error","请重新确认时间");
+      }
 
       ui->label_4->setText("定时时间:"+target.toString("yyyy-MM-dd HH:mm:ss"));
       EditTimer =new QTimer(this);
@@ -376,6 +449,8 @@ void MainWindow::on_SetTimeRec_clicked()
           EditTimer->start();
       });
 
+
+      ui->label_24->setText("已定时");
       //EditTimer->start(msecToTarget);
 
 
@@ -383,17 +458,19 @@ void MainWindow::on_SetTimeRec_clicked()
 }
 void MainWindow::on_StopTimeRec_clicked()
 {
+
     ui->OpenCameraBtn->setEnabled(false);
     ui->CloseCameraBtn->setEnabled(true);
     ui->TakePicBtn->setEnabled(true);
     ui->SavePicBtn->setEnabled(true);
-
+    ui->StopTimeRec->setEnabled(false);
+    ui->SetTimeRec->setEnabled(true);
     EditTimer->stop();
     if(!ui->StartRecBtn->isEnabled())
     {
        this->on_EndRecBtn_clicked();
     }
-
+    ui->label_24->setText("未定时");
 }
 
 

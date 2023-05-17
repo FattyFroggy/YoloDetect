@@ -1,5 +1,6 @@
-#include "videothread.h"
-
+﻿#include "videothread.h"
+#include<QCoreApplication>
+#include<QDir>
 VideoThread::VideoThread(QObject *parent)
     : QThread(parent)
 {
@@ -24,8 +25,21 @@ void VideoThread::run()
         return;
 
     YOLO *yolov5 = new YOLO;
-    yolov5->init("C:/Users/daras/Downloads/yolov5_onnx_dnn-master/yolov5_onnx_dnn-master/c++/yolov5s.onnx");
+    //yolov5->init("C:/Users/daras/Downloads/yolov5_onnx_dnn-master/yolov5_onnx_dnn-master/c++/yolov5s.onnx");
 
+    QString relativePath = "res/yolov5s.onnx";
+
+    // 获取当前应用程序所在的目录
+    QString currentDir = QCoreApplication::applicationDirPath();
+
+    // 拼接绝对路径
+    QString absolutePath = QDir(currentDir).absoluteFilePath(relativePath);
+
+    // 将路径转换为标准字符串
+    std::string modelPath = absolutePath.toStdString();
+
+
+    yolov5->init(modelPath);
     std::vector<detect_result> output;
     int total_frames = 0;
 
@@ -57,11 +71,15 @@ void VideoThread::run()
 
         end_time2=clock();
         //std::cout<<(1 / ((double)(end_time2 - start_name) / CLOCKS_PER_SEC))<<std::endl;
-        auto text = "FPS: " + std::to_string(1 / ((double)(end_time2 - start_name) / CLOCKS_PER_SEC));
+        double fps = (1 / ((double)(end_time2 - start_name) / CLOCKS_PER_SEC));
+        emit SendFps(fps);
+         //auto text = "FPS: " + std::to_string(1 / ((double)(end_time2 - start_name) / CLOCKS_PER_SEC));
         //qDebug() << "Frame time(ms): " << (double)(end_time - start_name) /*/ CLOCKS_PER_SEC*/;
-        cv::putText(frame, text, cv::Point(3, 25), cv::FONT_ITALIC, 0.8, cv::Scalar(0, 0, 255), 2);
+//        cv::putText(frame, text, cv::Point(3, 25), cv::FONT_ITALIC, 0.8, cv::Scalar(0, 0, 255), 2);
         cv::Mat target;
-        yolov5->draw_frame(frame,output,target);
+        items.clear();
+        yolov5->draw_frame(frame,output,target,items);
+        emit itemsEmitted(items);
         emit SendTracker(target);
         //msleep(i);
 

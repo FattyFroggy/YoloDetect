@@ -7,6 +7,10 @@
 #include"playerslider.h"
 #include <QMainWindow>
 #include<QFileDialog>
+
+
+#include <QtWidgets/QApplication>
+#include <QFile>
 namespace Ui {
 class PlayerMainWindow;
 }

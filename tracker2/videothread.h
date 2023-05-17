@@ -13,6 +13,8 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 #include "yolo.h"
+#include <QList>
+#include <QTableWidgetItem>
 
 class VideoThread : public QThread
 {
@@ -31,8 +33,11 @@ signals:
     void captureReady(cv::VideoCapture *capture);
 
     void SendTracker(const cv::Mat &mat);
-private:
 
+    void itemsEmitted(const QList<QTableWidgetItem*>& items);
+    void SendFps(double &fps);
+private:
+    QList<QTableWidgetItem*> items;
     QMutex m_mutex;
     cv::VideoCapture m_capture;
 

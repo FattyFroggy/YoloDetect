@@ -10,6 +10,23 @@ PlayerMainWindow::PlayerMainWindow(QWidget *parent) :
     setWindowIcon(QIcon(":/icon/icon.webp"));// 图标
     setFixedSize(800,600);//设置固定大小
 
+
+    //加载样式表
+    QString qss;
+    QFile file(":/css/blue.css");
+
+    if (file.open(QFile::ReadOnly))
+    {
+        //用readAll读取默认支持的是ANSI格式,如果不小心用creator打开编辑过了很可能打不开
+        qss = QLatin1String(file.readAll());
+
+        QString paletteColor = qss.mid(20, 7);
+        qApp->setPalette(QPalette(QColor(paletteColor)));
+        qApp->setStyleSheet(qss);
+        file.close();
+    }
+
+
     // 1.放置播放窗口
     m_pPlayer = new QMediaPlayer;//媒体播放器类
     m_pPlayerWidget = new QVideoWidget;// 视频显示组件窗口
