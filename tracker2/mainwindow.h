@@ -83,8 +83,11 @@ private slots:
     void on_SetTimeRec_clicked();
     void OnitemsEmitted(const QList<QTableWidgetItem*>& items);
     void OnGetFps(double &fps);
-private:
+    void on_pushButton_clicked();
 
+private:
+    int row = 0;
+    int col = 0;
     RecordThread *m_recordThread;
     VideoThread *m_videoThread;
 //    PlayVideo *m_playVideoThread;
@@ -94,6 +97,7 @@ private:
     cv::VideoCapture cam;
     QTimer *timer;//定时器用于定时取帧，上面说的隔一段时间就去取就是用这个实现
     QTimer *EditTimer;
+    QTimer *ButtonTimer;
 //    QTimer *progressTimer;
     void init();
 

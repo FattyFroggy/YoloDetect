@@ -67,6 +67,7 @@ void VideoThread::run()
         if(duration<40){
             msleep(40-duration);
         }
+
         //std::cout<<duration<<std::endl;
 
         end_time2=clock();
@@ -85,7 +86,7 @@ void VideoThread::run()
 
 
         emit CameraLabel(frame);
-
+        QCoreApplication::processEvents();
         if (isInterruptionRequested()){
             std::cout << "finished by user\n";
             break;

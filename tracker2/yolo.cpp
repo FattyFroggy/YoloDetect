@@ -166,7 +166,7 @@ void YOLO::detect(cv::Mat & frame, std::vector<detect_result> &results)
         dr.confidence = confidences[index];
         results.push_back(dr);
     }
-
+    QCoreApplication::processEvents();
 }
 
 void YOLO::draw_frame(cv::Mat & frame, std::vector<detect_result> &results,cv::Mat & target,QList<QTableWidgetItem*>& items)
@@ -216,5 +216,5 @@ void YOLO::draw_frame(cv::Mat & frame, std::vector<detect_result> &results,cv::M
         items.append(item5);
         items.append(item6);
     }
-
+    QCoreApplication::processEvents();
 }

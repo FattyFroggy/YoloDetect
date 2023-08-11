@@ -132,6 +132,15 @@ void MainWindow::init()
     ui->dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
     ui->dateTimeEdit->setMinimumDateTime(QDateTime::currentDateTime());
 
+
+   ButtonTimer=new QTimer(this);
+   connect(ButtonTimer, &QTimer::timeout, this, &MainWindow::on_pushButton_clicked,Qt::DirectConnection);
+    ButtonTimer->setInterval(1000);//
+    ButtonTimer->start();
+
+
+    qRegisterMetaType<QVector<int>>();
+    qRegisterMetaType<Qt::Orientation>();
 }
 void MainWindow::on_GetTracker(const cv::Mat &target){
     imag = Mat2QImage(target);
@@ -140,10 +149,12 @@ void MainWindow::on_GetTracker(const cv::Mat &target){
         //ui->label_3->clear();
         ui->label_2->clear();
     }else{
+        //ui->label_2->clear();
         ui->label_2->setPixmap(QPixmap::fromImage(imag.scaled(ui->label->size(),Qt::KeepAspectRatio)));
         //ui->label_3->setText("出现可疑人物！！！！");
     }
 
+    QCoreApplication::processEvents();
 
 };
 void MainWindow::handleError(const QString& error)
@@ -168,45 +179,59 @@ void MainWindow::handleError(const QString& error)
 void MainWindow::onRec()
 {
     emit sendRecord(recFrame);
+    QCoreApplication::processEvents();
 }
 void MainWindow::OnitemsEmitted(const QList<QTableWidgetItem*>& items)
 {
-    int row = 0;
-    int col = 0;
+      row = 0;
+      col = 0;
 
     ui->tableWidget->clear();
-
+    QCoreApplication::processEvents();
     QStringList horizontalHeaders;
     horizontalHeaders << "class" << "confirm" << "x1"<< "x2"<< "y1"<< "y2";
     ui->tableWidget->setHorizontalHeaderLabels(horizontalHeaders);
+    QCoreApplication::processEvents();
     for (const QTableWidgetItem* item : items)
     {
         QTableWidgetItem *newItem = new QTableWidgetItem(QString::fromStdString(item->text().toStdString()));
         QString text=newItem->text();
         ui->tableWidget->setItem(row, col, newItem);
         col++;
-
+        QCoreApplication::processEvents();
         // 如果达到行的最大列数，增加行数并重置列数为0
         if (col >= ui->tableWidget->columnCount()) {
             row++;
             col = 0;
+        }
     }
-}
+    QCoreApplication::processEvents();
 }
 void MainWindow::OnGetFps(double &fps){
     ui->label_22->setText(QString::number(fps));
+    QCoreApplication::processEvents();
 }
 void MainWindow::ShowCameraLabel(const Mat &frame)
 {
-    recFrame=frame;
-    imag = Mat2QImage(frame);
 
+    if(frame.empty()){
+        //ui->label_3->clear();
+        qDebug("播放中");
+    }else
+
+    recFrame=frame;
+    //cv::imshow("video",frame);
+    imag = Mat2QImage(frame);
+    //ui->label->clear();
+    //qDebug("播放中");
     ui->label->setPixmap(QPixmap::fromImage(imag.scaled(ui->label->size(),Qt::KeepAspectRatio)));
 
 
     QDateTime time = QDateTime::currentDateTime();
-    QString Date = time.toString("yyyy-MM-dd-hh--mm--ss");
+    QString Date = time.toString("yyyy-MM-dd hh:mm:ss");
     ui->label_4->setText(Date);
+    //qDebug("播放中2");
+    QCoreApplication::processEvents();
 }
 QImage MainWindow::Mat2QImage(const Mat &mat)//mat转QImage
 {
@@ -232,6 +257,7 @@ QImage MainWindow::Mat2QImage(const Mat &mat)//mat转QImage
         qDebug()<<"ERROR:MatcouldnotbeconvertedtoQImage.";
         return QImage();
     }
+    QCoreApplication::processEvents();
 }
 
 
@@ -299,7 +325,7 @@ void MainWindow::on_SavePicBtn_clicked()
     QString fileStr = "D:/111/"+strDate;
 
     QString fileName = QFileDialog::getSaveFileName(this, "Save Image", fileStr, "PNG Images (*.png);;JPEG Images (*.jpg);;Bitmap Images (*.bmp)");
-    //QString fileStr = "D:/111/"+strDate + fileName;
+    //QString fileStr = "D:/111/Images"+strDate + fileName;
 
 
     QString readString = fileName;
@@ -341,7 +367,7 @@ void MainWindow::on_EndRecBtn_clicked()
 
 void MainWindow::on_OpenPicBtn_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "D:/111/", tr("Image Files (*.png *.jpg *.bmp)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "D:/111/Images", tr("Image Files (*.png *.jpg *.bmp)"));
 
     if (!fileName.isEmpty()) {
         cv::Mat image = cv::imread(fileName.toStdString(), cv::IMREAD_COLOR);
@@ -351,7 +377,7 @@ void MainWindow::on_OpenPicBtn_clicked()
             return;
         }
         QImage ShwoPic=Mat2QImage(image);
-         ui->label_2->setPixmap(QPixmap::fromImage(ShwoPic.scaled(ui->label->size(),Qt::KeepAspectRatio)));
+         ui->label_3->setPixmap(QPixmap::fromImage(ShwoPic.scaled(ui->label->size(),Qt::KeepAspectRatio)));
     }
 }
 void MainWindow::on_OpenVideoWindow_clicked()
@@ -406,6 +432,7 @@ void MainWindow::IntervalRec()
         this->on_EndRecBtn_clicked();
         this->on_StartRecBtn_clicked();
     }
+    QCoreApplication::processEvents();
 };
 
 void MainWindow::on_SetTimeRec_clicked()
@@ -441,12 +468,14 @@ void MainWindow::on_SetTimeRec_clicked()
 
       ui->label_4->setText("定时时间:"+target.toString("yyyy-MM-dd HH:mm:ss"));
       EditTimer =new QTimer(this);
-      EditTimer->setInterval(30000);//
+      EditTimer->setInterval(15000);//
 
       connect(EditTimer, &QTimer::timeout, this, &MainWindow::IntervalRec);
 
       QTimer::singleShot(msecToTarget,this,[=]{
+
           EditTimer->start();
+          this->on_StartRecBtn_clicked();
       });
 
 
@@ -474,3 +503,15 @@ void MainWindow::on_StopTimeRec_clicked()
 }
 
 
+
+void MainWindow::on_pushButton_clicked()
+{
+    if(ui->pushButton->isEnabled()==true){
+        ui->pushButton->setEnabled(false);
+    }else{
+        ui->pushButton->setEnabled(true);
+    }
+
+
+    qDebug("播放中");
+}
